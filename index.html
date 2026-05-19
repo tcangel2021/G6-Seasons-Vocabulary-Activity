@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Spin, Scramble, and Spell!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght class=300..700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #4e54c8;
+            --secondary: #8f94fb;
+            --accent-gold: #ffd700;
+            --accent-green: #2ecc71;
+            --accent-red: #e74c3c;
+            --light-text: #ffffff;
+            --monitor-bg: rgba(11, 13, 35, 0.85);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+            font-family: 'Fredoka', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: url('https://img.freepik.com/free-photo/aesthetic-cloud-wallpaper_23-2151901870.jpg?semt=ais_hybrid&w=740&q=80') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--light-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 15px;
+        }
+
+        /* --- Teacher / Top Controls --- */
+        .top-navbar {
+            display: flex;
+            width: 100%;
+            max-width: 1000px;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.4);
+            padding: 12px 20px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls-cluster {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 6px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+        }
+
+        .control-label {
+            font-size: 0.9rem;
+            color: #222;
+            font-weight: 600;
+        }
+
+        select {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .icon-btn {
+            background: var(--primary);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+        }
+
+        .icon-btn:hover {
+            background: var(--secondary);
+            transform: scale(1.05);
+        }
+        
+        .icon-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* --- Main Layout --- */
+        .game-container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            flex-grow: 1;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 40px;
+            padding: 30px 20px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .game-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #3f449e;
+            text-align: center;
+            text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.9), 0 4px 10px rgba(0,0,0,0.05);
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            width: 100%;
+        }
+
+        /* --- Glowing Slot Machine Monitor --- */
+        .monitor-frame {
+            width: 100%;
+            max-width: 460px;
+            aspect-ratio: 4 / 3;
+            background: linear-gradient(145deg, #5d64e6, #32378c);
+            border-radius: 32px;
+            padding: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3), 
+                        0 0 20px rgba(143, 148, 251, 0.6), 
+                        inset 0 0 15px rgba(255,255,255,0.3);
+            position: relative;
+            animation: constantGlow 3s infinite alternate;
+        }
+
+        @keyframes constantGlow {
+            0% { box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 15px rgba(78, 84, 200, 0.6); }
+            100% { box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 35px rgba(241, 196, 15, 0.8); }
+        }
+
+        .monitor-frame.spinning {
+            animation: borderGlowFast 0.4s infinite alternate;
+        }
+
+        @keyframes borderGlowFast {
+            0% { box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 25px var(--accent-gold); }
+            100% { box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 45px #ff6b6b; }
+        }
+
+        .monitor-screen {
+            width: 100%;
+            height: 100%;
+            background: var(--monitor-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            border: 6px solid #232659;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Slot Reel System */
+        .reel-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .reel-ribbon {
+            position: absolute;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            top: 0;
+            left: 0;
+        }
+
+        .reel-item {
+            width: 100%;
+            height: 280px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .reel-item img {
+            width: 85%;
+            height: 85%;
+            object-fit: contain;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            padding: 10px;
+        }
+
+        /* Overlay effects */
+        .monitor-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            background: linear-gradient(rgba(255,255,255,0.12) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.3) 100%);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* --- Timer Display --- */
+        .timer-banner {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(231, 76, 60, 0.95);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.3rem;
+            border: 3px solid white;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        .timer-banner.warning {
+            background: var(--accent-red);
+            animation: flash 0.5s infinite alternate;
+        }
+
+        @keyframes flash {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0.6; transform: scale(1.1); }
+        }
+
+        /* --- Words Display Output --- */
+        .word-display-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+            min-height: 110px;
+        }
+
+        .scrambled-box {
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: 8px;
+            color: #2c3e50;
+            text-shadow: 1px 1px 0px white;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 35px;
+            border-radius: 20px;
+            border: 3px dashed var(--primary);
+            text-transform: lowercase;
+            text-align: center;
+            min-width: 280px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .revealed-box {
+            font-size: 3.2rem;
+            font-weight: 700;
+            letter-spacing: 5px;
+            color: #27ae60;
+            text-shadow: 0 0 20px rgba(46, 204, 113, 0.6), 2px 2px 0px white;
+            text-transform: lowercase;
+            display: none;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* --- Action Buttons Grid --- */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 500px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            padding: 16px 24px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.2);
+            position: relative;
+            top: 0;
+        }
+
+        .btn:active {
+            top: 6px;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            top: 0;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.1);
+        }
+
+        .btn-start { background: linear-gradient(135deg, #1dd1a1, #10ac84); color: white; }
+        .btn-stop { background: linear-gradient(135deg, #ff9f43, #ee5253); color: white; }
+        .btn-reveal { background: linear-gradient(135deg, #feca57, #ff9f43); color: white; }
+        .btn-next { background: linear-gradient(135deg, #54a0ff, #2e86de); color: white; }
+
+        /* Confetti Canvas Overlay */
+        #confetti-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* --- Responsive Tweaks --- */
+        @media(max-width: 600px) {
+            .top-navbar { flex-direction: column; gap: 10px; }
+            .game-title { font-size: 1.7rem; }
+            .scrambled-box { font-size: 2rem; }
+            .revealed-box { font-size: 2.2rem; }
+            .btn { padding: 12px 16px; font-size: 1.1rem; border-radius: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="top-navbar">
+        <div class="controls-cluster">
+            <div class="control-group">
+                <span class="control-label">⏳ Timer:</span>
+                <select id="timer-setting">
+                    <option value="10">10s</option>
+                    <option value="15">15s</option>
+                    <option value="20" selected>20s</option>
+                    <option value="25">25s</option>
+                    <option value="30">30s</option>
+                    <option value="60">60s</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <span class="control-label">🔊 Level:</span>
+                <input type="range" id="volume-control" min="0" max="1" step="0.1" value="0.5" style="width: 70px; cursor: pointer; accent-color: #4e54c8;">
+            </div>
+        </div>
+        <div class="controls-cluster">
+            <button class="icon-btn" id="mute-btn" title="Sound Control">🔊</button>
+            <button class="icon-btn" id="fullscreen-btn" title="Big Screen Mode">⛶</button>
+            <button class="icon-btn" id="reset-btn" title="Start Over" style="background: var(--accent-red);">⟳</button>
+        </div>
+    </div>
+
+    <div class="game-container">
+        
+        <div class="game-title">✨ Spin, Scramble, Spell!</div>
+        
+        <div class="monitor-frame" id="monitor-frame">
+            <div class="monitor-screen">
+                <div class="timer-banner" id="timer-display" style="display: none;">⏱️ <span>20</span></div>
+                <div class="reel-container">
+                    <div class="reel-ribbon" id="reel-ribbon">
+                        </div>
+                </div>
+                <div class="monitor-overlay"></div>
+            </div>
+        </div>
+
+        <div class="word-display-area">
+            <div class="scrambled-box" id="scrambled-output" style="display: none;">🎰 press spin!</div>
+            <div class="revealed-box" id="revealed-output">winter</div>
+        </div>
+
+        <div class="action-grid">
+            <button class="btn btn-start" id="btn-start">🎰 Spin!</button>
+            <button class="btn btn-stop" id="btn-stop" disabled>🛑 Stop!</button>
+            <button class="btn btn-reveal" id="btn-reveal" disabled>👀 Check Word</button>
+            <button class="btn btn-next" id="btn-next" disabled>Next Play →</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Word and Image Asset Database ---
+        const VOCABULARY = [
+            { word: 'summer', url: 'https://static.vecteezy.com/system/resources/thumbnails/002/380/180/small/beach-summer-holiday-starter-pack-background-design-free-vector.jpg' },
+            { word: 'spring', url: 'https://img.freepik.com/premium-vector/lovely-spring-background-clipart-vector-art-illustration_761413-17826.jpg?w=360' },
+            { word: 'winter', url: 'https://spaces-cdn.clipsafari.com/byjixvhgu8rk4fstoq0gqyur72qd' },
+            { word: 'fall', url: 'https://png.pngtree.com/png-vector/20230728/ourmid/pngtree-fall-clipart-illustration-of-autumn-with-girl-walking-cartoon-vector-png-image_6813348.png' },
+            { word: 'warm', url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRITDDAR10V6s6XbnYsjr7pu5-GcHKIEIIwHw&s' },
+            { word: 'dry', url: 'https://media.istockphoto.com/id/1783909060/vector/heat-wave-drought-in-nature-global-warming-and-climate-change-concept.jpg?s=612x612&w=0&k=20&c=Km5mAn4yXMly4AYEqh2v_yxTWTIbI8SQcmL1AuIR9sg=' },
+            { word: 'cool', url: 'https://clipart-library.com/img/705001.jpg' },
+            { word: 'foggy', url: 'https://clipart-library.com/2023/3f7dfc23856ed5e7dadbf6c8bec075c2.jpg' },
+            { word: 'snowy', url: 'https://clipart-library.com/2023/2-20182_snowfall-png-pic-snowy-weather-clip-art.png' },
+            { word: 'cold', url: 'https://classroomclipart.com/image/static2/preview2/boy-shivering-in-the-winter-cold-13298.jpg' },
+            { word: 't-shirt', url: 'https://freesvg.org/img/Azure_T-Shirt.png' },
+            { word: 'dress', url: 'https://png.pngtree.com/png-clipart/20230914/original/pngtree-pink-dress-clipart-pink-dress-with-bow-cartoon-vector-png-image_11244963.png' },
+            { word: 'coat', url: 'https://cdn.creazilla.com/cliparts/38621/trench-coat-clipart-xl.png' },
+            { word: 'jacket', url: 'https://classroomclipart.com/image/static7/preview2/boys-winter-jacket-with-zipper-clip-art-59190.jpg' }
+        ];
+
+        // --- Web Audio API Audio Synthesizer Engine ---
+        const AudioEngine = {
+            ctx: null,
+            muted: false,
+            masterVolume: 0.5,
+            loopAudio: null,
+
+            init() {
+                try {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                } catch(e) { console.log(e); }
+                this.setupThinkingMusic();
+            },
+
+            setupThinkingMusic() {
+                try {
+                    this.loopAudio = new Audio("mixkit-fun-and-games-6.mp3");
+                    this.loopAudio.loop = true;
+                    this.loopAudio.volume = this.muted ? 0 : this.masterVolume;
+                } catch(e) { console.log(e); }
+            },
+
+            setVolume(val) {
+                this.masterVolume = parseFloat(val);
+                if (this.loopAudio && !this.muted) {
+                    if (typeof Game !== 'undefined' && Game.timerVal <= 5) {
+                        this.loopAudio.volume = this.masterVolume * 0.2;
+                    } else {
+                        this.loopAudio.volume = this.masterVolume;
+                    }
+                }
+            },
+
+            startThinkingLoop() {
+                if (this.loopAudio) {
+                    try {
+                        this.loopAudio.currentTime = 0;
+                        this.loopAudio.volume = this.muted ? 0 : this.masterVolume;
+                        this.loopAudio.play().catch(e => console.log(e));
+                    } catch(e) { console.log(e); }
+                }
+            },
+
+            stopThinkingLoop() {
+                if (this.loopAudio) {
+                    try {
+                        this.loopAudio.pause();
+                    } catch(e) { console.log(e); }
+                }
+            },
+
+            duckThinkingLoop() {
+                if (this.loopAudio && !this.muted) {
+                    try {
+                        this.loopAudio.volume = this.masterVolume * 0.2;
+                    } catch(e) { console.log(e); }
+                }
+            },
+
+            playClick() {
+                if (this.muted || !this.ctx) return;
+                try {
+                    let osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(this.masterVolume * 0.1, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.1);
+                } catch(e) {}
+            },
+
+            playTick() {
+                if (this.muted || !this.ctx) return;
+                try {
+                    let osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(this.masterVolume * 0.1, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.05);
+                } catch(e) {}
+            },
+
+            playWarning() {
+                if (this.muted || !this.ctx) return;
+                try {
+                    let osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(this.masterVolume * 0.08, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.12);
+                } catch(e) {}
+            },
+
+            playChime() {
+                if (this.muted || !this.ctx) return;
+                try {
+                    const now = this.ctx.currentTime;
+                    const notes = [261.63, 329.63, 392.00, 523.25];
+                    notes.forEach((freq, idx) => {
+                        let osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                        osc.type = 'sine'; osc.frequency.setValueAtTime(freq, now + (idx * 0.08));
+                        gain.gain.setValueAtTime(this.masterVolume * 0.15, now + (idx * 0.08));
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + (idx * 0.08) + 0.3);
+                        osc.connect(gain); gain.connect(this.ctx.destination);
+                        osc.start(now + (idx * 0.08)); osc.stop(now + (idx * 0.08) + 0.3);
+                    });
+                } catch(e) {}
+            }
+        };
+
+        // --- Core Application Logic Management ---
+        const Game = {
+            state: 'IDLE',
+            pool: [...VOCABULARY],
+            currentIndex: 0,
+            spinInterval: null,
+            timerVal: 20,
+            timerInterval: null,
+            itemHeight: 280,
+
+            init() {
+                this.cacheElements();
+                this.bindEvents();
+                this.buildReel();
+                window.addEventListener('resize', () => this.handleResize());
+                this.handleResize();
+            },
+
+            cacheElements() {
+                this.elFrame = document.getElementById('monitor-frame');
+                this.elRibbon = document.getElementById('reel-ribbon');
+                this.elScrambled = document.getElementById('scrambled-output');
+                this.elRevealed = document.getElementById('revealed-output');
+                this.elTimer = document.getElementById('timer-display');
+                this.elTimerNum = this.elTimer.querySelector('span');
+                
+                this.btnStart = document.getElementById('btn-start');
+                this.btnStop = document.getElementById('btn-stop');
+                this.btnReveal = document.getElementById('btn-reveal');
+                this.btnNext = document.getElementById('btn-next');
+                
+                this.selTimer = document.getElementById('timer-setting');
+                this.sldVolume = document.getElementById('volume-control');
+                this.btnMute = document.getElementById('mute-btn');
+                this.btnFullscreen = document.getElementById('fullscreen-btn');
+                this.btnReset = document.getElementById('reset-btn');
+            },
+
+            bindEvents() {
+                const triggerAction = (cb) => {
+                    if(!AudioEngine.ctx) AudioEngine.init();
+                    AudioEngine.playClick();
+                    cb.call(this);
+                };
+
+                this.btnStart.addEventListener('click', () => triggerAction(this.startSpinning));
+                this.btnStop.addEventListener('click', () => triggerAction(this.stopSpinning));
+                this.btnReveal.addEventListener('click', () => triggerAction(this.revealWord));
+                this.btnNext.addEventListener('click', () => triggerAction(this.nextRound));
+                
+                this.btnReset.addEventListener('click', () => triggerAction(this.resetGame));
+                this.btnMute.addEventListener('click', () => {
+                    if(!AudioEngine.ctx) AudioEngine.init();
+                    AudioEngine.muted = !AudioEngine.muted;
+                    this.btnMute.innerText = AudioEngine.muted ? '🔇' : '🔊';
+                    if (AudioEngine.loopAudio) {
+                        AudioEngine.loopAudio.volume = AudioEngine.muted ? 0 : AudioEngine.masterVolume;
+                    }
+                });
+                this.btnFullscreen.addEventListener('click', () => this.toggleFullscreen());
+
+                if (this.sldVolume) {
+                    this.sldVolume.addEventListener('input', (e) => {
+                        if(!AudioEngine.ctx) AudioEngine.init();
+                        AudioEngine.setVolume(e.target.value);
+                    });
+                }
+            },
+
+            buildReel() {
+                this.pool.sort(() => Math.random() - 0.5);
+                this.elRibbon.innerHTML = '';
+                
+                this.pool.forEach(item => {
+                    let div = document.createElement('div');
+                    div.className = 'reel-item';
+                    div.innerHTML = `<img src="${item.url}" alt="${item.word}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'50\' x=\'50\' font-size=\'14\' text-anchor=\'middle\'>Image Loading</text></svg>';">`;
+                    this.elRibbon.appendChild(div);
+                });
+
+                // Smooth wrap-around setup clone
+                let clone = document.createElement('div');
+                clone.className = 'reel-item';
+                clone.innerHTML = `<img src="${this.pool[0].url}" alt="${this.pool[0].word}">`;
+                this.elRibbon.appendChild(clone);
+            },
+
+            handleResize() {
+                const screenHeight = this.elFrame.querySelector('.monitor-screen').clientHeight;
+                this.itemHeight = screenHeight;
+                const items = this.elRibbon.querySelectorAll('.reel-item');
+                items.forEach(el => el.style.height = `${this.itemHeight}px`);
+                
+                if (this.state === 'IDLE' || this.state === 'GUESSING' || this.state === 'REVEALED') {
+                    this.elRibbon.style.top = `-${this.currentIndex * this.itemHeight}px`;
+                }
+            },
+
+            startSpinning() {
+                if (this.state !== 'IDLE') return;
+                this.state = 'SPINNING';
+                
+                this.btnStart.disabled = true;
+                this.btnStop.disabled = false;
+                this.selTimer.disabled = true;
+                
+                this.elScrambled.style.display = 'none';
+                this.elRevealed.style.display = 'none';
+                this.elFrame.classList.add('spinning');
+                
+                let currentY = parseFloat(this.elRibbon.style.top) || 0;
+                
+                this.spinInterval = setInterval(() => {
+                    currentY -= 40; 
+                    const maxLimit = this.pool.length * this.itemHeight;
+                    if (Math.abs(currentY) >= maxLimit) {
+                        currentY = 0;
+                    }
+                    this.elRibbon.style.top = `${currentY}px`;
+                    AudioEngine.playTick();
+                }, 25);
+            },
+
+            stopSpinning() {
+                if (this.state !== 'SPINNING') return;
+                clearInterval(this.spinInterval);
+                this.elFrame.classList.remove('spinning');
+                
+                this.currentIndex = Math.floor(Math.random() * this.pool.length);
+                
+                this.elRibbon.style.transition = 'top 0.4s cubic-bezier(0.25, 1, 0.5, 1.1)';
+                this.elRibbon.style.top = `-${this.currentIndex * this.itemHeight}px`;
+                
+                setTimeout(() => {
+                    this.elRibbon.style.transition = 'none';
+                    this.prepareChallenge();
+                }, 400);
+            },
+
+            prepareChallenge() {
+                this.state = 'GUESSING';
+                this.btnStop.disabled = true;
+                this.btnReveal.disabled = false;
+                
+                const currentObj = this.pool[this.currentIndex];
+                
+                this.elScrambled.innerText = this.scrambleString(currentObj.word);
+                this.elScrambled.style.display = 'block';
+                
+                this.timerVal = parseInt(this.selTimer.value);
+                this.elTimerNum.innerText = this.timerVal;
+                this.elTimer.style.display = 'flex';
+                this.elTimer.classList.remove('warning');
+                
+                AudioEngine.startThinkingLoop();
+                if (this.timerVal <= 5) {
+                    AudioEngine.duckThinkingLoop();
+                }
+                
+                this.timerInterval = setInterval(() => {
+                    this.timerVal--;
+                    this.elTimerNum.innerText = this.timerVal;
+                    
+                    if(this.timerVal <= 5 && this.timerVal > 0) {
+                        this.elTimer.classList.add('warning');
+                        AudioEngine.duckThinkingLoop();
+                        AudioEngine.playWarning();
+                    }
+                    
+                    if(this.timerVal <= 0) {
+                        clearInterval(this.timerInterval);
+                        this.elTimer.classList.add('warning');
+                        AudioEngine.playWarning();
+                    }
+                }, 1000);
+            },
+
+            scrambleString(word) {
+                let arr = word.toLowerCase().split('');
+                let iterations = 0;
+                while (iterations < 10) {
+                    for (let i = arr.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [arr[i], arr[j]] = [arr[j], arr[i]];
+                    }
+                    if (arr.join('') !== word.toLowerCase()) break;
+                    iterations++;
+                }
+                return arr.join('');
+            },
+
+            revealWord() {
+                if (this.state !== 'GUESSING') return;
+                clearInterval(this.timerInterval);
+                this.state = 'REVEALED';
+                
+                AudioEngine.stopThinkingLoop();
+                
+                this.btnReveal.disabled = true;
+                this.btnNext.disabled = false;
+                this.elTimer.style.display = 'none';
+                
+                const currentObj = this.pool[this.currentIndex];
+                this.elRevealed.innerText = currentObj.word.toLowerCase();
+                this.elScrambled.style.display = 'none';
+                this.elRevealed.style.display = 'block';
+                
+                AudioEngine.playChime();
+                Confetti.trigger();
+            },
+
+            nextRound() {
+                if (this.state !== 'REVEALED') return;
+                this.state = 'IDLE';
+                this.btnNext.disabled = true;
+                this.btnStart.disabled = false;
+                this.selTimer.disabled = false;
+                
+                this.elRevealed.style.display = 'none';
+                this.elScrambled.innerText = '🎰 press spin!';
+                this.elScrambled.style.display = 'block';
+            },
+
+            resetGame() {
+                clearInterval(Game.spinInterval);
+                clearInterval(Game.timerInterval);
+                AudioEngine.stopThinkingLoop();
+                
+                Game.state = 'IDLE';
+                Game.currentIndex = 0;
+                Game.buildReel();
+                Game.handleResize();
+                
+                Game.btnStart.disabled = false;
+                Game.btnStop.disabled = true;
+                Game.btnReveal.disabled = true;
+                Game.btnNext.disabled = true;
+                Game.selTimer.disabled = false;
+                
+                Game.elTimer.style.display = 'none';
+                Game.elRevealed.style.display = 'none';
+                Game.elScrambled.innerText = '🎰 press spin!';
+                Game.elScrambled.style.display = 'block';
+            },
+
+            toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {});
+                } else {
+                    document.exitFullscreen();
+                }
+            }
+        };
+
+        // --- Canvas Particle Confetti Simulation System ---
+        const Confetti = {
+            canvas: null, ctx: null, particles: [], active: false,
+            init() {
+                this.canvas = document.getElementById('confetti-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                window.addEventListener('resize', () => this.resize());
+                this.resize();
+            },
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            },
+            trigger() {
+                this.particles = [];
+                const colors = ['#feca57', '#1dd1a1', '#54a0ff', '#ff6b6b', '#ff9ff3'];
+                for(let i=0; i<80; i++) {
+                    this.particles.push({
+                        x: window.innerWidth / 2,
+                        y: window.innerHeight / 2 + 50,
+                        vx: (Math.random() - 0.5) * 15,
+                        vy: (Math.random() - 0.7) * 15 - 5,
+                        size: Math.random() * 8 + 6,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        rotation: Math.random() * 360,
+                        rSpeed: (Math.random() - 0.5) * 10
+                    });
+                }
+                if(!this.active) {
+                    this.active = true;
+                    this.loop();
+                }
+            },
+            loop() {
+                if(!Confetti.active) return;
+                Confetti.ctx.clearRect(0, 0, Confetti.canvas.width, Confetti.canvas.height);
+                let alive = false;
+                
+                Confetti.particles.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    p.vy += 0.4; 
+                    p.vx *= 0.98; 
+                    p.rotation += p.rSpeed;
+                    
+                    if(p.y < Confetti.canvas.height) alive = true;
+                    
+                    Confetti.ctx.save();
+                    Confetti.ctx.translate(p.x, p.y);
+                    Confetti.ctx.rotate(p.rotation * Math.PI / 180);
+                    Confetti.ctx.fillStyle = p.color;
+                    Confetti.ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                    Confetti.ctx.restore();
+                });
+
+                if(alive) {
+                    requestAnimationFrame(Confetti.loop);
+                } else {
+                    Confetti.active = false;
+                    Confetti.ctx.clearRect(0, 0, Confetti.canvas.width, Confetti.canvas.height);
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Game.init();
+            Confetti.init();
+        });
+    </script>
+</body>
+</html>
